@@ -32,12 +32,22 @@ class SequenceMatcherTest {
 
 	@Test
 	fun findLongestMatch2() {
-		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
-		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
+		val a = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+			"30", "31", "32", "33", "34", "35", "36", "37", "38", "39"
+		)
+		val b = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "i", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20x", "21", "22", "28", "29",
+			"30", "31", "32", "33", "34", "35y", "36", "37", "38", "39"
+		)
 		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
-			Match(8, 9, 23),
-			s.findLongestMatch(0, a.length, 0, b.length)
+			Match(8, 9, 11),
+			s.findLongestMatch(0, a.size, 0, b.size)
 		)
 	}
 
@@ -50,17 +60,27 @@ class SequenceMatcherTest {
 
 	@Test
 	fun getMatchingBlocks2() {
-		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
-		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
+		val a = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+			"30", "31", "32", "33", "34", "35", "36", "37", "38", "39"
+		)
+		val b = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "i", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20x", "21", "22", "28", "29",
+			"30", "31", "32", "33", "34", "35y", "36", "37", "38", "39"
+		)
 		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
 			listOf(
 				Match(0, 0, 8),
-				Match(8, 9, 23),
-				Match(31, 33, 4),
-				Match(45, 37, 16),
-				Match(61, 54, 8),
-				Match(69, 62, 0)
+				Match(8, 9, 11),
+				Match(20, 21, 2),
+				Match(27, 23, 7),
+				Match(35, 31, 4),
+				Match(39, 35, 0)
 			),
 			s.getMatchingBlocks()
 		)
@@ -82,20 +102,30 @@ class SequenceMatcherTest {
 
 	@Test
 	fun getOpcodes2() {
-		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
-		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a.toList(), b.toList())
+		val a = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+			"30", "31", "32", "33", "34", "35", "36", "37", "38", "39"
+		)
+		val b = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "i", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20x", "21", "22", "28", "29",
+			"30", "31", "32", "33", "34", "35y", "36", "37", "38", "39"
+		)
+		val s = SequenceMatcher(a, b)
 		Assertions.assertEquals(
 			listOf(
 				Opcode(Tag.EQUAL, 0, 8, 0, 8),
 				Opcode(Tag.INSERT, 8, 8, 8, 9),
-				Opcode(Tag.EQUAL, 8, 31, 9, 32),
-				Opcode(Tag.INSERT, 31, 31, 32, 33),
-				Opcode(Tag.EQUAL, 31, 35, 33, 37),
-				Opcode(Tag.DELETE, 35, 45, 37, 37),
-				Opcode(Tag.EQUAL, 45, 61, 37, 53),
-				Opcode(Tag.INSERT, 61, 61, 53, 54),
-				Opcode(Tag.EQUAL, 61, 69, 54, 62)
+				Opcode(Tag.EQUAL, 8, 19, 9, 20),
+				Opcode(Tag.REPLACE, 19, 20, 20, 21),
+				Opcode(Tag.EQUAL, 20, 22, 21, 23),
+				Opcode(Tag.DELETE, 22, 27, 23, 23),
+				Opcode(Tag.EQUAL, 27, 34, 23, 30),
+				Opcode(Tag.REPLACE, 34, 35, 30, 31),
+				Opcode(Tag.EQUAL, 35, 39, 31, 35)
 			),
 			s.getOpcodes()
 		)
@@ -103,9 +133,19 @@ class SequenceMatcherTest {
 
 	@Test
 	fun getGroupedOpcodes() {
-		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
-		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a.toList(), b.toList())
+		val a = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+			"30", "31", "32", "33", "34", "35", "36", "37", "38", "39"
+		)
+		val b = listOf(
+			"1", "2", "3", "4", "5", "6", "7", "8", "i", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+			"20x", "21", "22", "28", "29",
+			"30", "31", "32", "33", "34", "35y", "36", "37", "38", "39"
+		)
+		val s = SequenceMatcher(a, b)
 		Assertions.assertEquals(
 			listOf(
 				listOf(
@@ -114,16 +154,16 @@ class SequenceMatcherTest {
 					Opcode(Tag.EQUAL,  8, 11, 9, 12)
 				),
 				listOf(
-					Opcode(Tag.EQUAL, 28, 31, 29, 32),
-					Opcode(Tag.INSERT, 31, 31, 32, 33),
-					Opcode(Tag.EQUAL, 31, 35, 33, 37),
-					Opcode(Tag.DELETE, 35, 45, 37, 37),
-					Opcode(Tag.EQUAL, 45, 48, 37, 40)
+					Opcode(Tag.EQUAL, 16, 19, 17, 20),
+					Opcode(Tag.REPLACE, 19, 20, 20, 21),
+					Opcode(Tag.EQUAL, 20, 22, 21, 23),
+					Opcode(Tag.DELETE, 22, 27, 23, 23),
+					Opcode(Tag.EQUAL, 27, 30, 23, 26)
 				),
 				listOf(
-					Opcode(Tag.EQUAL, 58, 61, 50, 53),
-					Opcode(Tag.INSERT, 61, 61, 53, 54),
-					Opcode(Tag.EQUAL, 61, 64, 54, 57)
+					Opcode(Tag.EQUAL, 31, 34, 27, 30),
+					Opcode(Tag.REPLACE, 34, 35, 30, 31),
+					Opcode(Tag.EQUAL, 35, 38, 31, 34)
 				)
 			),
 			s.getGroupedOpcodes()
