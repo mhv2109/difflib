@@ -171,3 +171,65 @@ class SequenceMatcherTest {
 	}
 
 }
+
+/**
+ * get_close_matches doctests.
+ */
+class GetCloseMatchesTest {
+	
+	private val kwlist = listOf(
+		"and", "as", "assert", "break", "class", "continue", "def", "del", "elif", "else", "except", "exec", "finally",
+		"for", "from", "global", "if", "import", "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return",
+		"try", "while", "with", "yield"
+	).map { it.toList() }
+
+	@Test
+	fun doctest1() {
+		val result = getCloseMatches(
+			"appel".toList(),
+			listOf(
+				"ape",
+				"apple",
+				"peach",
+				"puppy"
+			).map { it.toList() }
+		)
+		Assertions.assertEquals(
+			listOf(
+				"ape",
+				"apple"
+			).map { it.toList() },
+			result
+		)
+	}
+
+	@Test
+	fun doctest2() {
+		val result = getCloseMatches("wheel".toList(), kwlist)
+		Assertions.assertEquals(
+			listOf("while".toList()),
+			result
+		)
+	}
+
+	@Test
+	fun doctest3() {
+		val result = getCloseMatches("Apple".toList(), kwlist)
+		Assertions.assertEquals(
+			emptyList<Char>(),
+			result
+		)
+	}
+
+	@Test
+	fun doctest4() {
+		val result = getCloseMatches("accept".toList(), kwlist)
+		Assertions.assertEquals(
+			listOf(
+				"except".toList()
+			),
+			result
+		)
+	}
+
+}

@@ -35,7 +35,6 @@ class SequenceMatcher<T>(
 	private val opcodes = mutableListOf<Opcode>()
 	private var matchingBlocks = mutableListOf<Match>()
 
-	private val fullbcount = mutableMapOf<T, Int>()
 	private val b2j = mutableMapOf<T, MutableList<Int>>()
 	private val bjunk = mutableSetOf<T>()
 	private val bpopular = mutableSetOf<T>()
@@ -59,7 +58,6 @@ class SequenceMatcher<T>(
 		this.b = b
 		opcodes.clear()
 		matchingBlocks.clear()
-		fullbcount.clear()
 		chainB()
 	}
 
@@ -280,4 +278,41 @@ class SequenceMatcher<T>(
 		return result.toList()
 	}
 
+}
+
+/**
+ * Use SequenceMatcher to return list of the best "good enough" matches.
+ *
+ * @param sequence sequence for which close matches are desired (typically a string cast to a List<Char>)
+ * @param possibilities possibilities is a list of sequences against which to match
+ * @param n the maximum number of close matches to return
+ * @param cutoff (default 0.6) is a Double in [0, 1]
+ */
+fun <T> getCloseMatches(sequence: List<T>, possibilities: Collection<List<T>>,
+						n: Int = 3, cutoff: Double = 0.6): List<List<T>> {
+
+	if(n <= 0)
+		throw IllegalArgumentException("Expected: n > 0. Actual: n = $n")
+	if(cutoff > 1.0 || cutoff < 0.0)
+		throw IllegalArgumentException("Expected: 0.0 < cutoff < 1.0. Actual: cutoff = $cutoff")
+
+	var allResults = mutableListOf<Pair<Double, List<T>>>()
+	val s = SequenceMatcher<T>()
+	s.setSeq2(sequence)
+	possibilities.forEach {
+		s.setSeq1(it)
+		val ratio = s.ratio()
+		if(ratio >= cutoff)
+			allResults.add(Pair(ratio, it))
+	}
+	allResults = allResults.sortedWith(compareBy { it.first } ).toMutableList()
+
+	val result = mutableListOf<List<T>>()
+	for(i in 0 until n) {
+		if(i < allResults.size)
+			result.add(allResults[i].second)
+		else
+			break
+	}
+	return result.toList()
 }
