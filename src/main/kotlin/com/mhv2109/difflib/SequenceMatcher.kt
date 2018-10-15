@@ -20,42 +20,42 @@ private data class QueueElem(
  *
  * Reference implementation here: https://github.com/python/cpython/blob/3.7/Lib/difflib.py
  *
- * @param a the first of two sequences to be compared, by default, an empty string
- * @param b the second of two sequences to be compared, by default, an empty string
+ * @param a the first of two sequences to be compared, by default, an empty List
+ * @param b the second of two sequences to be compared, by default, an empty List
  * @param isJunk a one-argument function that takes a sequence element and returns true iff the element is junk
  * @param autoJunk should be set to False to disable the "automatic junk heuristic" that treats popular elements as junk
  */
-class SequenceMatcher(
-	private var a: String = "",
-	private var b: String = "",
-	private val isJunk: (Char) -> Boolean = { _ -> false },
+class SequenceMatcher<T>(
+	private var a: List<T> = emptyList(),
+	private var b: List<T> = emptyList(),
+	private val isJunk: (T) -> Boolean = { _ -> false },
 	private val autoJunk: Boolean = true
 ) {
 
 	private val opcodes = mutableListOf<Opcode>()
 	private var matchingBlocks = mutableListOf<Match>()
 
-	private val fullbcount = mutableMapOf<Char, Int>()
-	private val b2j = mutableMapOf<Char, MutableList<Int>>()
-	private val bjunk = mutableSetOf<Char>()
-	private val bpopular = mutableSetOf<Char>()
+	private val fullbcount = mutableMapOf<T, Int>()
+	private val b2j = mutableMapOf<T, MutableList<Int>>()
+	private val bjunk = mutableSetOf<T>()
+	private val bpopular = mutableSetOf<T>()
 
 	init {
 		setSeqs(a, b)
 	}
 
-	fun setSeqs(a: String, b: String) {
+	fun setSeqs(a: List<T>, b: List<T>) {
 		setSeq1(a)
 		setSeq2(b)
 	}
 
-	fun setSeq1(a: String) {
+	fun setSeq1(a: List<T>) {
 		this.a = a
 		opcodes.clear()
 		matchingBlocks.clear()
 	}
 
-	fun setSeq2(b: String) {
+	fun setSeq2(b: List<T>) {
 		this.b = b
 		opcodes.clear()
 		matchingBlocks.clear()
@@ -85,7 +85,7 @@ class SequenceMatcher(
 
 		// purge popular elements that are not junk
 		bpopular.clear()
-		val n = b.length
+		val n = b.size
 		if(autoJunk && n >= 200) {
 			val ntest = n / 100 + 1
 			b2j.forEach { t, u ->
@@ -174,8 +174,8 @@ class SequenceMatcher(
 		if(matchingBlocks.isNotEmpty())
 			return matchingBlocks.toList()
 
-		val la = a.length
-		val lb = b.length
+		val la = a.size
+		val lb = b.size
 
 		val queue = mutableListOf(QueueElem(0, la, 0, lb))
 		matchingBlocks.clear()
@@ -218,7 +218,7 @@ class SequenceMatcher(
 
 	fun ratio(): Double {
 		val matches = getMatchingBlocks().map { it.size }.toIntArray().sum()
-		return calculateRatio(matches, a.length + b.length)
+		return calculateRatio(matches, a.size + b.size)
 	}
 
 	fun getOpcodes(): List<Opcode> {
@@ -254,22 +254,22 @@ class SequenceMatcher(
 		// Fixup leading and trailing groups if they show no changes
 		if(codes.first().tag == Tag.EQUAL) {
 			val code = codes.first()
-			codes[0] = code.copy(i1 = Math.max(code.i1, code.i2-n), j1 = Math.max(code.j1, code.j2-n))
+			codes[0] = code.copy(alo = Math.max(code.alo, code.ahi-n), blo = Math.max(code.blo, code.bhi-n))
 		}
 		if(codes.last().tag == Tag.EQUAL) {
 			val code = codes.last()
-			codes[codes.size-1] = code.copy(i2 = Math.min(code.i2, code.i1+n), j2 = Math.min(code.j2, code.j1+n))
+			codes[codes.size-1] = code.copy(ahi = Math.min(code.ahi, code.alo+n), bhi = Math.min(code.bhi, code.blo+n))
 		}
 
 		val nn = n + n
 		val group = mutableListOf<Opcode>()
 		val result = mutableListOf<List<Opcode>>()
 		codes.forEach {
-			if(it.tag == Tag.EQUAL && it.i2-it.i1 > nn) {
-				group.add(it.copy(i2 = Math.min(it.i2, it.i1+n), j2 = Math.min(it.j2, it.j1+n)))
+			if(it.tag == Tag.EQUAL && it.ahi-it.alo > nn) {
+				group.add(it.copy(ahi = Math.min(it.ahi, it.alo+n), bhi = Math.min(it.bhi, it.blo+n)))
 				result.add(group.toList())
 				group.clear()
-				group.add(it.copy(i1 = Math.max(it.i1, it.i2-n), j1 = Math.max(it.j1, it.j2-n)))
+				group.add(it.copy(alo = Math.max(it.alo, it.ahi-n), blo = Math.max(it.blo, it.bhi-n)))
 			} else {
 				group.add(it.copy())
 			}

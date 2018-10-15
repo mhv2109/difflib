@@ -6,10 +6,10 @@ enum class Tag {
 
 data class Opcode(
 	val tag: Tag,
-	val i1: Int,
-	val i2: Int,
-	val j1: Int,
-	val j2: Int
+	val alo: Int,
+	val ahi: Int,
+	val blo: Int,
+	val bhi: Int
 )
 
 data class Match(

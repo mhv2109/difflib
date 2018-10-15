@@ -10,23 +10,23 @@ class SequenceMatcherTest {
 
 	@Test
 	fun setSeq1() {
-		val s = SequenceMatcher("abcd", "bcde")
+		val s = SequenceMatcher("abcd".toList(), "bcde".toList())
 		Assertions.assertEquals(0.75, s.ratio())
-		s.setSeq1("bcde")
+		s.setSeq1("bcde".toList())
 		Assertions.assertEquals(1.0, s.ratio())
 	}
 
 	@Test
 	fun setSeq2() {
-		val s = SequenceMatcher("abcd", "bcde")
+		val s = SequenceMatcher("abcd".toList(), "bcde".toList())
 		Assertions.assertEquals(0.75, s.ratio())
-		s.setSeq2("abcd")
+		s.setSeq2("abcd".toList())
 		Assertions.assertEquals(1.0, s.ratio())
 	}
 
 	@Test
 	fun findLongestMatch() {
-		val s = SequenceMatcher(" abcd", "abcd abcd")
+		val s = SequenceMatcher(" abcd".toList(), "abcd abcd".toList())
 		Assertions.assertEquals(Match(0, 4, 5), s.findLongestMatch(0, 5, 0, 9))
 	}
 
@@ -34,7 +34,7 @@ class SequenceMatcherTest {
 	fun findLongestMatch2() {
 		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
 		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a, b)
+		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
 			Match(8, 9, 23),
 			s.findLongestMatch(0, a.length, 0, b.length)
@@ -43,7 +43,7 @@ class SequenceMatcherTest {
 
 	@Test
 	fun getMatchingBlocks() {
-		val s = SequenceMatcher("abxcd", "abcd")
+		val s = SequenceMatcher("abxcd".toList(), "abcd".toList())
 		Assertions.assertEquals(listOf(Match(a=0, b=0, size=2), Match(a=3, b=2, size=2), Match(5, 4, 0)),
 			s.getMatchingBlocks())
 	}
@@ -52,7 +52,7 @@ class SequenceMatcherTest {
 	fun getMatchingBlocks2() {
 		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
 		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a, b)
+		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
 			listOf(
 				Match(0, 0, 8),
@@ -68,7 +68,7 @@ class SequenceMatcherTest {
 
 	@Test
 	fun getOpcodes() {
-		val s = SequenceMatcher("qabxcd", "abycdf")
+		val s = SequenceMatcher("qabxcd".toList(), "abycdf".toList())
 		Assertions.assertEquals(
 			listOf(
 				Opcode(Tag.DELETE, 0, 1, 0, 0),
@@ -84,7 +84,7 @@ class SequenceMatcherTest {
 	fun getOpcodes2() {
 		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
 		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a, b)
+		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
 			listOf(
 				Opcode(Tag.EQUAL, 0, 8, 0, 8),
@@ -105,7 +105,7 @@ class SequenceMatcherTest {
 	fun getGroupedOpcodes() {
 		val a = "123456789101112131415161718192021222324252627282930313233343536373839"
 		val b = "12345678i91011121314151617181920x21222829303132333435y36373839"
-		val s = SequenceMatcher(a, b)
+		val s = SequenceMatcher(a.toList(), b.toList())
 		Assertions.assertEquals(
 			listOf(
 				listOf(
