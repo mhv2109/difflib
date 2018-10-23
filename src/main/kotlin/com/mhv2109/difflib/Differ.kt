@@ -1,5 +1,7 @@
 package com.mhv2109.difflib
 
+import kotlin.coroutines.experimental.buildSequence
+
 /**
  * Differ is a class for comparing sequences of lines of text, and producing human-readable differences or deltas.
  * Differ uses SequenceMatcher both to compare sequences of lines, and to compare sequences of characters within similar
@@ -17,22 +19,19 @@ class Differ(
 	 * Compare two sequences of lines; generate the resulting delta. Each sequence must contain individual single-line
 	 * strings ending with newlines.
 	 */
-	fun compare(a: List<String>, b: List<String>): List<String> {
+	fun compare(a: List<String>, b: List<String>): Sequence<String> = buildSequence {
 
-		val result = mutableListOf<String>()
-		val cruncher = SequenceMatcher(a, b, this.lineJunk)
+		val cruncher = SequenceMatcher(a, b, lineJunk)
 		val opcodes = cruncher.getOpcodes()
 		opcodes.forEach {
-			val g: List<String> = when(it.tag) {
+			val g = when(it.tag) {
 				Tag.REPLACE -> fancyReplace(a, it.alo, it.ahi, b, it.blo, it.bhi)
 				Tag.DELETE -> dump('-', a, it.alo, it.ahi)
 				Tag.INSERT -> dump('+', b, it.blo, it.bhi)
 				Tag.EQUAL -> dump(' ', a, it.alo, it.ahi)
 			}
-			result.addAll(g)
+			yieldAll(g)
 		}
-
-		return result.toList()
 	}
 
 	/**
@@ -40,12 +39,12 @@ class Differ(
 	 * (if any) is used as a synch point, and intraline difference marking is done on the similar pair. Lots of work,
 	 * but often worth it.
 	 */
-	private fun fancyReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): List<String> {
+	private fun fancyReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
 
 		var bestRatio = 0.74
 		val cutoff = 0.75
 
-		val cruncher = SequenceMatcher(isJunk = this.charJunk)
+		val cruncher = SequenceMatcher(isJunk = charJunk)
 		var eqi = -1
 		var eqj = -1
 		var besti = 0
@@ -77,7 +76,8 @@ class Differ(
 		if(bestRatio < cutoff) { // no non-identical "pretty close" pair
 			if(eqi == -1) {
 				// no identical pair either -- treat it as a straight replace
-				return plainReplace(a, alo, ahi, b, blo, bhi)
+				yieldAll(plainReplace(a, alo, ahi, b, blo, bhi))
+				return@buildSequence
 			}
 			// identical pair
 			besti = eqi
@@ -89,8 +89,7 @@ class Differ(
 		}
 
 		// pump out diffs from before the synch point
-		val result = mutableListOf<String>()
-		result.addAll(fancyHelper(a, alo, besti, b, blo, bestj))
+		yieldAll(fancyHelper(a, alo, besti, b, blo, bestj))
 
 		// do intraline marking on the synch pair
 		val aelt = a[besti]
@@ -117,16 +116,15 @@ class Differ(
 					}
 				}
 			}
-			result.addAll(qformat(aelt, belt, atags, btags))
+			yieldAll(qformat(aelt, belt, atags, btags))
 		} else {
-			result.add("  $aelt")
+			yield("  $aelt")
 		}
 
-		result.addAll(fancyHelper(a, besti+1, ahi, b, bestj+1, bhi))
-		return result.toList()
+		yieldAll(fancyHelper(a, besti+1, ahi, b, bestj+1, bhi))
 	}
 
-	private fun qformat(aline: String, bline: String, atags: String, btags: String): List<String> {
+	private fun qformat(aline: String, bline: String, atags: String, btags: String): Sequence<String> = buildSequence {
 		var common = Math.min(countLeading(aline, '\t'), countLeading(bline, '\t'))
 		common = Math.min(common, countLeading(atags.substring(common), ' '))
 		common = Math.min(common, countLeading(btags.substring(common), ' '))
@@ -134,31 +132,24 @@ class Differ(
 		val _atags = atags.substring(common).trimEnd { it -> it == ' ' }
 		val _btags = btags.substring(common).trimEnd { it -> it == ' ' }
 
-		val result = mutableListOf<String>()
-
-		result.add("- $aline")
+		yield("- $aline")
 		if(_atags.isNotEmpty())
-			result.add("? ${"\t".repeat(common)}$_atags\n")
+			yield("? ${"\t".repeat(common)}$_atags\n")
 
-		result.add("+ $bline")
+		yield("+ $bline")
 		if(_btags.isNotEmpty())
-			result.add("? ${"\t".repeat(common)}$_btags\n")
-
-		return result.toList()
+			yield("? ${"\t".repeat(common)}$_btags\n")
 	}
 
-	private fun dump(tag: Char, x: List<String>, lo: Int, hi: Int): List<String> {
-		val result = mutableListOf<String>()
+	private fun dump(tag: Char, x: List<String>, lo: Int, hi: Int): Sequence<String> = buildSequence {
 		for(i in lo until hi) {
-			result.add("$tag ${x[i]}")
+			yield("$tag ${x[i]}")
 		}
-		return result.toList()
 	}
 
-	private fun plainReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): List<String> {
-		val result = mutableListOf<String>()
-		val first: List<String>
-		val second: List<String>
+	private fun plainReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
+		val first: Sequence<String>
+		val second: Sequence<String>
 
 		if(bhi - blo < ahi - alo) {
 			first = dump('+', b, blo, bhi)
@@ -168,24 +159,19 @@ class Differ(
 			second = dump('+', b, blo, bhi)
 		}
 
-		result.addAll(first)
-		result.addAll(second)
-		return result.toList()
+		yieldAll(first)
+		yieldAll(second)
 	}
 
-	private fun fancyHelper(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): List<String> {
-		val g: List<String> = if(alo < ahi) {
+	private fun fancyHelper(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
+		if(alo < ahi) {
 			if(blo < bhi) {
-				fancyReplace(a, alo, ahi, b, blo, bhi)
+				yieldAll(fancyReplace(a, alo, ahi, b, blo, bhi))
 			} else {
-				dump('-', a, alo, ahi)
+				yieldAll(dump('-', a, alo, ahi))
 			}
 		} else if(blo < bhi) {
-			dump('+', b, blo, bhi)
-		} else {
-			emptyList()
+			yieldAll(dump('+', b, blo, bhi))
 		}
-
-		return g
 	}
 }

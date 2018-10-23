@@ -16,7 +16,7 @@ class DifferTest {
 		val result = listOf(
 			"- one\n", "?  ^\n", "+ ore\n", "?  ^\n", "- two\n",
 			"- three\n", "?  -\n", "+ tree\n", "+ emu\n")
-		Assertions.assertEquals(result, d.compare(a, b))
+		Assertions.assertEquals(result, d.compare(a, b).toList())
 	}
 
 }
