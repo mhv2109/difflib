@@ -3,8 +3,8 @@ package com.mhv2109.difflib
 /**
  * Describes the basic actions for turning one sequence into another.
  */
-enum class Tag {
-	REPLACE, INSERT, DELETE, EQUAL
+enum class Tag(val ch: Char) {
+	REPLACE('^'), INSERT('+'), DELETE('-'), EQUAL(' ')
 }
 
 /**

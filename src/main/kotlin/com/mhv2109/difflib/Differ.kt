@@ -11,8 +11,8 @@ import kotlin.coroutines.experimental.buildSequence
  * @param charJunk A function that should accept a single Char and return __true__ if junk
  */
 class Differ(
-	private val lineJunk: (String) -> Boolean = { _ -> false },
-	private val charJunk: (Char) -> Boolean = { _ -> false }
+	private val lineJunk: (String) -> Boolean = { false },
+	private val charJunk: (Char) -> Boolean = { false }
 ) {
 
 	/**
@@ -26,8 +26,8 @@ class Differ(
 		opcodes.forEach {
 			val g = when(it.tag) {
 				Tag.REPLACE -> fancyReplace(a, it.alo, it.ahi, b, it.blo, it.bhi)
-				Tag.DELETE -> dump('-', a, it.alo, it.ahi)
-				Tag.INSERT -> dump('+', b, it.blo, it.bhi)
+				Tag.DELETE -> dump(Tag.DELETE.ch, a, it.alo, it.ahi)
+				Tag.INSERT -> dump(Tag.INSERT.ch, b, it.blo, it.bhi)
 				Tag.EQUAL -> dump(' ', a, it.alo, it.ahi)
 			}
 			yieldAll(g)
@@ -39,7 +39,8 @@ class Differ(
 	 * (if any) is used as a synch point, and intraline difference marking is done on the similar pair. Lots of work,
 	 * but often worth it.
 	 */
-	private fun fancyReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
+	private fun fancyReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>,
+							 blo: Int, bhi: Int): Sequence<String> = buildSequence {
 
 		var bestRatio = 0.74
 		val cutoff = 0.75
@@ -126,11 +127,11 @@ class Differ(
 
 	private fun qformat(aline: String, bline: String, atags: String, btags: String): Sequence<String> = buildSequence {
 		var common = Math.min(countLeading(aline, '\t'), countLeading(bline, '\t'))
-		common = Math.min(common, countLeading(atags.substring(common), ' '))
-		common = Math.min(common, countLeading(btags.substring(common), ' '))
+		common = Math.min(common, countLeading(atags.substring(common), Tag.EQUAL.ch))
+		common = Math.min(common, countLeading(btags.substring(common), Tag.EQUAL.ch))
 
-		val _atags = atags.substring(common).trimEnd { it -> it == ' ' }
-		val _btags = btags.substring(common).trimEnd { it -> it == ' ' }
+		val _atags = atags.substring(common).trimEnd { it -> it == Tag.EQUAL.ch }
+		val _btags = btags.substring(common).trimEnd { it -> it == Tag.EQUAL.ch }
 
 		yield("- $aline")
 		if(_atags.isNotEmpty())
@@ -147,31 +148,33 @@ class Differ(
 		}
 	}
 
-	private fun plainReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
+	private fun plainReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>,
+							 blo: Int, bhi: Int): Sequence<String> = buildSequence {
 		val first: Sequence<String>
 		val second: Sequence<String>
 
 		if(bhi - blo < ahi - alo) {
-			first = dump('+', b, blo, bhi)
-			second = dump('-', a, alo, ahi)
+			first = dump(Tag.INSERT.ch, b, blo, bhi)
+			second = dump(Tag.DELETE.ch, a, alo, ahi)
 		} else {
-			first = dump('-', a, alo, ahi)
-			second = dump('+', b, blo, bhi)
+			first = dump(Tag.DELETE.ch, a, alo, ahi)
+			second = dump(Tag.INSERT.ch, b, blo, bhi)
 		}
 
 		yieldAll(first)
 		yieldAll(second)
 	}
 
-	private fun fancyHelper(a: List<String>, alo: Int, ahi: Int, b: List<String>, blo: Int, bhi: Int): Sequence<String> = buildSequence {
+	private fun fancyHelper(a: List<String>, alo: Int, ahi: Int, b: List<String>,
+							blo: Int, bhi: Int): Sequence<String> = buildSequence {
 		if(alo < ahi) {
 			if(blo < bhi) {
 				yieldAll(fancyReplace(a, alo, ahi, b, blo, bhi))
 			} else {
-				yieldAll(dump('-', a, alo, ahi))
+				yieldAll(dump(Tag.DELETE.ch, a, alo, ahi))
 			}
 		} else if(blo < bhi) {
-			yieldAll(dump('+', b, blo, bhi))
+			yieldAll(dump(Tag.INSERT.ch, b, blo, bhi))
 		}
 	}
 }

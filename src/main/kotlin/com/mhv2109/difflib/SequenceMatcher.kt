@@ -28,7 +28,7 @@ private data class QueueElem(
 class SequenceMatcher<T>(
 	private var a: List<T> = emptyList(),
 	private var b: List<T> = emptyList(),
-	private val isJunk: (T) -> Boolean = { _ -> false },
+	private val isJunk: (T) -> Boolean = { false },
 	private val autoJunk: Boolean = true
 ) {
 
