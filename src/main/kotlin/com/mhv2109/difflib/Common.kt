@@ -48,3 +48,10 @@ internal fun countLeading(line: String, ch: Char): Int {
 		i += 1
 	return i
 }
+
+/**
+ * Return true for ignorable character: iff `ch` is a space or tab.
+ */
+fun isCharJunk(ch: Char, ws: Collection<Char> = setOf(' ', '\t')): Boolean {
+	return ws.contains(ch)
+}
