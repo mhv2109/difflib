@@ -1,7 +1,5 @@
 package com.mhv2109.difflib
 
-import kotlin.coroutines.experimental.buildSequence
-
 /**
  * Differ is a class for comparing sequences of lines of text, and producing human-readable differences or deltas.
  * Differ uses SequenceMatcher both to compare sequences of lines, and to compare sequences of characters within similar
@@ -19,7 +17,7 @@ class Differ(
 	 * Compare two sequences of lines; generate the resulting delta. Each sequence must contain individual single-line
 	 * strings ending with newlines.
 	 */
-	fun compare(a: List<String>, b: List<String>): Sequence<String> = buildSequence {
+	fun compare(a: List<String>, b: List<String>): Sequence<String> = sequence {
 
 		val cruncher = SequenceMatcher(a, b, lineJunk)
 		val opcodes = cruncher.getOpcodes()
@@ -40,7 +38,7 @@ class Differ(
 	 * but often worth it.
 	 */
 	private fun fancyReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>,
-							 blo: Int, bhi: Int): Sequence<String> = buildSequence {
+							 blo: Int, bhi: Int): Sequence<String> = sequence {
 
 		var bestRatio = 0.74
 		val cutoff = 0.75
@@ -78,7 +76,7 @@ class Differ(
 			if(eqi == -1) {
 				// no identical pair either -- treat it as a straight replace
 				yieldAll(plainReplace(a, alo, ahi, b, blo, bhi))
-				return@buildSequence
+				return@sequence
 			}
 			// identical pair
 			besti = eqi
@@ -125,7 +123,7 @@ class Differ(
 		yieldAll(fancyHelper(a, besti+1, ahi, b, bestj+1, bhi))
 	}
 
-	private fun qformat(aline: String, bline: String, atags: String, btags: String): Sequence<String> = buildSequence {
+	private fun qformat(aline: String, bline: String, atags: String, btags: String): Sequence<String> = sequence {
 		var common = Math.min(countLeading(aline, '\t'), countLeading(bline, '\t'))
 		common = Math.min(common, countLeading(atags.substring(common), Tag.EQUAL.ch))
 		common = Math.min(common, countLeading(btags.substring(common), Tag.EQUAL.ch))
@@ -142,14 +140,14 @@ class Differ(
 			yield("? ${"\t".repeat(common)}$_btags\n")
 	}
 
-	private fun dump(tag: Char, x: List<String>, lo: Int, hi: Int): Sequence<String> = buildSequence {
+	private fun dump(tag: Char, x: List<String>, lo: Int, hi: Int): Sequence<String> = sequence {
 		for(i in lo until hi) {
 			yield("$tag ${x[i]}")
 		}
 	}
 
 	private fun plainReplace(a: List<String>, alo: Int, ahi: Int, b: List<String>,
-							 blo: Int, bhi: Int): Sequence<String> = buildSequence {
+							 blo: Int, bhi: Int): Sequence<String> = sequence {
 		val first: Sequence<String>
 		val second: Sequence<String>
 
@@ -166,7 +164,7 @@ class Differ(
 	}
 
 	private fun fancyHelper(a: List<String>, alo: Int, ahi: Int, b: List<String>,
-							blo: Int, bhi: Int): Sequence<String> = buildSequence {
+							blo: Int, bhi: Int): Sequence<String> = sequence {
 		if(alo < ahi) {
 			if(blo < bhi) {
 				yieldAll(fancyReplace(a, alo, ahi, b, blo, bhi))
