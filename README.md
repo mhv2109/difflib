@@ -25,8 +25,7 @@ d.compare(a, b)
 ```
 
 ## HtmlDiff
-Note: This class depends on experimental Kotlin features!  You must include `org.jetbrains.kotlinx:kotlinx-html-jvm` on
-your classpath. 
+Note: This class depends on experimental Kotlin features!
 
 For producing HTML side by side comparison with change highlights. The current implementation differs from the original
 Python `difflib.HtmlDiff` in that it uses `SequenceMatcher` to produce side-by-side comparisons instead of `Differ`.
@@ -37,3 +36,6 @@ val to = listOf("once", "too", "tree")
 htmlDiff.makeFile(from, to)
 ```
 
+# Building
+`./gradlew jar` builds this project without any dependencies.  
+`./gradlew shadowJar` builds this project and includes `org.jetbrains.kotlinx:kotlinx-html-jvm` in the jar.
