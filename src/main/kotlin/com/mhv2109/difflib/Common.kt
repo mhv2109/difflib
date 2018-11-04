@@ -9,7 +9,7 @@ enum class Tag(val ch: Char) {
 
 /**
  * Tag and subList indices for turning sequence a into sequence b.
- * @param Tag basic action
+ * @param tag basic action
  * @param alo lower bound of a on which to perform action
  * @param ahi upper bound of a on which to perform action
  * @param blo lower bound of b of which to use for action
