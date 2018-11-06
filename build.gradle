@@ -2,11 +2,12 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.3.0'
     id 'org.jetbrains.dokka' version '0.9.17'
-    id 'com.github.johnrengelman.shadow' version '4.0.2'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'maven-publish'
 }
 
 group 'com.mhv2109'
-version '1.0'
+version '1.0.0'
 
 sourceCompatibility = 1.9
 
@@ -30,12 +31,7 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-shadowJar {
-    dependencies {
-        include(dependency("org.jetbrains.kotlinx:kotlinx-html-jvm:0.6.11"))
-    }
-}
-
+// testing and docs
 test {
     useJUnitPlatform()
 }
@@ -43,4 +39,67 @@ test {
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/javadoc"
+}
+
+// building artifacts
+task dokkaJar(type: Jar) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    classifier = "javadoc"
+    from dokka
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// publishing
+def pomConfig = {
+    licenses {
+        license {
+            name "MIT License"
+            url "https://raw.githubusercontent.com/mhv2109/difflib/master/LICENSE.txt"
+            distribution "repo"
+        }
+    }
+    scm {
+        url "https://github.com/mhv2109/difflib"
+    }
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact dokkaJar
+            artifact sourcesJar
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Kotlin implementation of Python difflib ')
+                root.appendNode('name', 'difflib')
+                root.appendNode('url', 'https://github.com/mhv2109/difflib"')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintray {
+    user = System.getProperty("bintray.user")
+    key = System.getProperty("bintray.key")
+
+    publications = ['mavenPublication']
+
+    pkg {
+        repo = 'maven'
+        name = 'difflib'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/mhv2109/difflib.git'
+        version {
+            name = '1.0.0' 
+            desc = '1.0.0' 
+            released = new Date()
+        }
+    }
 }

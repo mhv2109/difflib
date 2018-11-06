@@ -286,7 +286,7 @@ class SequenceMatcher<T>(
  * @param sequence sequence for which close matches are desired (typically a string cast to a List<Char>)
  * @param possibilities possibilities is a list of sequences against which to match
  * @param n the maximum number of close matches to return
- * @param cutoff (default 0.6) is a Double in [0, 1]
+ * @param cutoff (default 0.6) is a Double in 0 <= cutoff <= 1
  */
 fun <T> getCloseMatches(sequence: List<T>, possibilities: Collection<List<T>>,
 						n: Int = 3, cutoff: Double = 0.6): List<List<T>> {

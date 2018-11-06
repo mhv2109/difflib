@@ -40,3 +40,5 @@ gradle-app.setting
 .idea/
 *.iml
 out/
+
+.DS_Store
