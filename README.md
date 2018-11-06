@@ -5,7 +5,7 @@ This is a Kotlin port of the `difflib` Python package found
 
 # Features
 
-## SequenceMatcher
+### SequenceMatcher
 A flexible class for comparing pairs of sequences.  The basic algorithm predates, and is a little fancier than, an 
 algorithm published in the late 1980's by Ratcliff and Obershelp under the hyperbolic name "gestalt pattern matching".
 
@@ -14,7 +14,7 @@ val s = SequenceMatcher("abcd".toList(), "bcde".toList())
 s.ratio() // 0.75
 ```
 
-## Differ
+### Differ
 Differ is a class for comparing sequences of lines of text, and producing human-readable differences or deltas.
 
 ```
@@ -24,7 +24,7 @@ val b = listOf("ore\n", "tree\n", "emu\n")
 d.compare(a, b)
 ```
 
-## HtmlDiff
+### HtmlDiff
 Note: This class depends on experimental Kotlin features!
 
 For producing HTML side by side comparison with change highlights. The current implementation differs from the original
@@ -35,3 +35,33 @@ val from = listOf("one", "two", "three")
 val to = listOf("once", "too", "tree")
 htmlDiff.makeFile(from, to)
 ```
+
+# Usage
+### Gradle
+```
+repositories {
+    maven { url "https://dl.bintray.com/mhv2109/maven" } 
+}
+...
+dependencies {
+    compile 'com.mhv2109:difflib:1.0.0'
+}
+```
+
+### Maven
+```
+<repositories>
+    <repository>
+      <id>mhv2109-maven</id>
+      <url>https://dl.bintray.com/mhv2109/maven</url>
+    </repository>
+</repositories>
+...
+<dependency>
+  <groupId>com.mhv2109</groupId>
+  <artifactId>difflib</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
+```
+
