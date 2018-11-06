@@ -35,7 +35,3 @@ val from = listOf("one", "two", "three")
 val to = listOf("once", "too", "tree")
 htmlDiff.makeFile(from, to)
 ```
-
-# Building
-`./gradlew jar` builds this project without any dependencies.  
-`./gradlew shadowJar` builds this project and includes `org.jetbrains.kotlinx:kotlinx-html-jvm` in the jar.
