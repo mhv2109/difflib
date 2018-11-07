@@ -40,7 +40,7 @@ htmlDiff.makeFile(from, to)
 ### Gradle
 ```
 repositories {
-    maven { url "https://dl.bintray.com/mhv2109/maven" } 
+    jcenter() 
 }
 ...
 dependencies {
@@ -52,8 +52,8 @@ dependencies {
 ```
 <repositories>
     <repository>
-      <id>mhv2109-maven</id>
-      <url>https://dl.bintray.com/mhv2109/maven</url>
+      <id>jcenter<id>
+      <url>https://jcenter.bintray.com/</url>
     </repository>
 </repositories>
 ...
